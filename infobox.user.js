@@ -2,7 +2,7 @@
 // @name         Infobox
 // @namespace    http://tampermonkey.net/
 // @version      v1.0
-// @description  try to take over the world!
+// @description  Fügt einen Header ganz oben an.
 // @author       You
 // @match        https://www.leitstellenspiel.de/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=leitstellenspiel.de
