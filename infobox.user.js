@@ -4,7 +4,7 @@
 // @version      v1.0.1
 // @description  Fügt einen Header ganz oben an.
 // @author       Max8
-// @match        https://www.leitstellenspiel.de/*
+// @match        https://www.leitstellenspiel.de/
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=leitstellenspiel.de
 // @grant        none
 // ==/UserScript==
