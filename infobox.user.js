@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Infobox
 // @namespace    http://tampermonkey.net/
-// @version      v1.0
+// @version      v1.0.1
 // @description  Fügt einen Header ganz oben an.
 // @author       Max8
 // @match        https://www.leitstellenspiel.de/*
