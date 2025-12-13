@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      v1.0
 // @description  Fügt einen Header ganz oben an.
-// @author       You
+// @author       Max8
 // @match        https://www.leitstellenspiel.de/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=leitstellenspiel.de
 // @grant        none
