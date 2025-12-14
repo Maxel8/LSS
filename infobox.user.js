@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Infobox
 // @namespace    http://tampermonkey.net/
-// @version      2.0.0
+// @version      2.0.1
 // @description  Fügt einen Header mit aktuellem Credit-Ziel oben ein und aktualisiert automatisch.
 // @author       Max8
 // @match        https://www.leitstellenspiel.de/
