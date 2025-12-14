@@ -17,7 +17,7 @@
 
         const button = document.createElement('button');
         button.id = 'vehicle-distance-button';
-        button.textContent = 'Fahrzeug-Kilometer';
+        button.textContent = 'Fahrzeug‑Kilometer';
 
         button.style.cssText = `
             position: fixed;
@@ -52,22 +52,20 @@
             font-family: Arial, sans-serif;
         `;
 
-        const closeBtn = document.createElement('button');
-        closeBtn.textContent = 'Schließen';
+        const closeBtn = document.createElement('div');
+        closeBtn.textContent = '✕';
         closeBtn.style.cssText = `
             position: fixed;
-            top: 15px;
-            right: 15px;
-            padding: 6px 10px;
+            top: 12px;
+            right: 16px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #333;
+            user-select: none;
         `;
 
         closeBtn.addEventListener('click', () => overlay.remove());
-
-        const title = document.createElement('h2');
-        title.textContent = 'Fahrzeug-Kilometerstände';
-
-        const content = document.createElement('div');
-        content.textContent = 'Hier werden später die Fahrzeugdaten aus der API angezeigt.';
 
         overlay.appendChild(closeBtn);
         overlay.appendChild(title);
