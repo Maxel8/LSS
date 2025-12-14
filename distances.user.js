@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gefahrene Kilometer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
-// @description  Zeigt eine Overlay-Tabelle mit Fahrzeug-Kilometerständen (sortiert)
+// @version      1.0.4
+// @description  Zeigt eine Overlay-Tabelle mit Fahrzeug-Kilometerständen (sortierbar)
 // @author       Max8
 // @match        https://www.leitstellenspiel.de/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=leitstellenspiel.de
@@ -101,29 +101,49 @@
                 })
             );
 
+            // Initial sort by total km
+            let sortKey = 'total';
+            let sortAsc = false;
             vehicles.sort((a, b) => b.total - a.total);
 
             const table = document.createElement('table');
             table.style.cssText = 'border-collapse: collapse; width: 100%;';
 
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Fahrzeug</th>
-                        <th>Gesamt (km)</th>
-                        <th>30 Tage (km)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${vehicles.map(v => `
-                        <tr>
-                            <td>${v.name}</td>
-                            <td>${v.total.toFixed(1)}</td>
-                            <td>${v.d30.toFixed(1)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            `;
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            ['Fahrzeug', 'Gesamt (km)', '30 Tage (km)'].forEach((txt, idx) => {
+                const th = document.createElement('th');
+                th.textContent = txt;
+                th.style.cursor = 'pointer';
+                th.onclick = () => {
+                    if (idx === 1) sortKey = 'total';
+                    else if (idx === 2) sortKey = 'd30';
+                    sortAsc = !sortAsc;
+                    vehicles.sort((a, b) => sortAsc ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]);
+                    renderTableBody();
+                };
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            const tbody = document.createElement('tbody');
+
+            function renderTableBody() {
+                tbody.innerHTML = '';
+                vehicles.forEach(v => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${v.name}</td>
+                        <td>${v.total.toFixed(1)}</td>
+                        <td>${v.d30.toFixed(1)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            renderTableBody();
+            table.appendChild(thead);
+            table.appendChild(tbody);
 
             container.innerHTML = '';
             container.appendChild(table);
