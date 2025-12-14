@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gefahrene Kilometer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.1.0
 // @description  Erstellt eine Übersicht mit allen Fahrzeugen (Button unten rechts)
 // @author       Max8
 // @match        https://www.leitstellenspiel.de/
@@ -69,8 +69,74 @@
 
         overlay.appendChild(closeBtn);
         overlay.appendChild(title);
+
+        const content = document.createElement('div');
+        content.textContent = 'Lade Fahrzeugdaten…';
         overlay.appendChild(content);
+
         document.body.appendChild(overlay);
+
+        loadAndRenderTable(content);
+    }
+
+    async function loadAndRenderTable(container) {
+        try {
+            const distRes = await fetch('/api/v1/vehicle_distances');
+            const distJson = await distRes.json();
+
+            const distances = distJson.result;
+
+            // Fahrzeugdetails parallel laden
+            const vehicles = await Promise.all(
+                distances.map(async d => {
+                    const res = await fetch(`/api/v2/vehicles/${d.vehicle_id}`);
+                    const json = await res.json();
+                    return {
+                        name: json.result.caption,
+                        total: d.distance_km,
+                        d30: d.distance_km_30d
+                    };
+                })
+            );
+
+            // Absteigend nach Gesamtfahrleistung sortieren
+            vehicles.sort((a, b) => b.total - a.total);
+
+            // Tabelle bauen
+            const table = document.createElement('table');
+            table.style.cssText = 'border-collapse: collapse; width: 100%;';
+
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Fahrzeug</th>
+                    <th>Gesamt (km)</th>
+                    <th>30 Tage (km)</th>
+                </tr>
+            `;
+
+            const tbody = document.createElement('tbody');
+
+            vehicles.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${v.name}</td>
+                    <td>${v.total.toFixed(1)}</td>
+                    <td>${v.d30.toFixed(1)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+
+            container.innerHTML = '';
+            container.appendChild(table);
+
+        } catch (err) {
+            container.textContent = 'Fehler beim Laden der Fahrzeugdaten.';
+            console.error(err);
+        }
     }
 
     // Start
