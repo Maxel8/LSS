@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xxx
 // @namespace    http://tampermonkey.net/
-// @version      2.0.2
+// @version      1.0.0
 // @description  xxx
 // @author       Max8
 // @match        https://www.leitstellenspiel.de/
