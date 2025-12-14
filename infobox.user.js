@@ -40,5 +40,5 @@
     }
 
     updateCredits();
-    setInterval(updateCredits, 900000); // alle 15 Minuten
+    setInterval(updateCredits, 120000); // alle 2 Minuten
 })();
