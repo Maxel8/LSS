@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Gefahrene Kilometer
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0
-// @description  Erstellt eine Übersicht mit allen Fahrzeugen (Button unten rechts)
+// @version      1.0.3
+// @description  Zeigt eine Overlay-Tabelle mit Fahrzeug-Kilometerständen (sortiert)
 // @author       Max8
-// @match        https://www.leitstellenspiel.de/
+// @match        https://www.leitstellenspiel.de/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=leitstellenspiel.de
 // @grant        none
 // ==/UserScript==
@@ -12,12 +12,13 @@
 (function () {
     'use strict';
 
+    /* ================= BUTTON ================= */
     function createFloatingButton() {
         if (document.getElementById('vehicle-distance-button')) return;
 
         const button = document.createElement('button');
         button.id = 'vehicle-distance-button';
-        button.textContent = 'Fahrzeug‑Kilometer';
+        button.textContent = 'Fahrzeug-Kilometer';
 
         button.style.cssText = `
             position: fixed;
@@ -33,11 +34,12 @@
             font-size: 13px;
         `;
 
-        button.addEventListener('click', showDistances);
+        button.addEventListener('click', showOverlay);
         document.body.appendChild(button);
     }
 
-    function showDistances() {
+    /* ================= OVERLAY ================= */
+    function showOverlay() {
         if (document.getElementById('vehicle-distance-overlay')) return;
 
         const overlay = document.createElement('div');
@@ -52,33 +54,34 @@
             font-family: Arial, sans-serif;
         `;
 
-        const closeBtn = document.createElement('div');
-        closeBtn.textContent = '✕';
-        closeBtn.style.cssText = `
+        const close = document.createElement('div');
+        close.textContent = '✕';
+        close.style.cssText = `
             position: fixed;
             top: 12px;
             right: 16px;
             font-size: 22px;
             font-weight: bold;
             cursor: pointer;
-            color: #333;
             user-select: none;
         `;
+        close.onclick = () => overlay.remove();
 
-        closeBtn.addEventListener('click', () => overlay.remove());
-
-        overlay.appendChild(closeBtn);
-        overlay.appendChild(title);
+        const title = document.createElement('h2');
+        title.textContent = 'Fahrzeug-Kilometerstände';
 
         const content = document.createElement('div');
         content.textContent = 'Lade Fahrzeugdaten…';
-        overlay.appendChild(content);
 
+        overlay.appendChild(close);
+        overlay.appendChild(title);
+        overlay.appendChild(content);
         document.body.appendChild(overlay);
 
         loadAndRenderTable(content);
     }
 
+    /* ================= DATA ================= */
     async function loadAndRenderTable(container) {
         try {
             const distRes = await fetch('/api/v1/vehicle_distances');
@@ -86,7 +89,6 @@
 
             const distances = distJson.result;
 
-            // Fahrzeugdetails parallel laden
             const vehicles = await Promise.all(
                 distances.map(async d => {
                     const res = await fetch(`/api/v2/vehicles/${d.vehicle_id}`);
@@ -99,46 +101,39 @@
                 })
             );
 
-            // Absteigend nach Gesamtfahrleistung sortieren
             vehicles.sort((a, b) => b.total - a.total);
 
-            // Tabelle bauen
             const table = document.createElement('table');
             table.style.cssText = 'border-collapse: collapse; width: 100%;';
 
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr>
-                    <th>Fahrzeug</th>
-                    <th>Gesamt (km)</th>
-                    <th>30 Tage (km)</th>
-                </tr>
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Fahrzeug</th>
+                        <th>Gesamt (km)</th>
+                        <th>30 Tage (km)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${vehicles.map(v => `
+                        <tr>
+                            <td>${v.name}</td>
+                            <td>${v.total.toFixed(1)}</td>
+                            <td>${v.d30.toFixed(1)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
             `;
-
-            const tbody = document.createElement('tbody');
-
-            vehicles.forEach(v => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${v.name}</td>
-                    <td>${v.total.toFixed(1)}</td>
-                    <td>${v.d30.toFixed(1)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            table.appendChild(thead);
-            table.appendChild(tbody);
 
             container.innerHTML = '';
             container.appendChild(table);
 
-        } catch (err) {
+        } catch (e) {
+            console.error(e);
             container.textContent = 'Fehler beim Laden der Fahrzeugdaten.';
-            console.error(err);
         }
     }
 
-    // Start
+    /* ================= START ================= */
     createFloatingButton();
 })();
