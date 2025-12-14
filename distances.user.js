@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gefahrene Kilometer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.1.2
 // @description  Zeigt eine Overlay-Tabelle mit Fahrzeug-Kilometerständen (sortierbar)
 // @author       Max8
 // @match        https://www.leitstellenspiel.de/*
