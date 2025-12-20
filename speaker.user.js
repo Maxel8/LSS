@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         LSS-Mission-Alarm-Speaker
-// @version      1.0.3
+// @version      1.0.4
 // @description  Speaks alarmed vehicles out
 // @author       Jan (jxn_30) modded by Crazycake
 // @match        https://www.leitstellenspiel.de/missions/*
