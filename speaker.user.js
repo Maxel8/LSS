@@ -12,7 +12,7 @@
 
     const useVehicleType = true;
     const playGong = true;
-    const gongUrl = 'https://www.myinstants.com/instant/feuerwehr-gong-88255/embed/';
+    const gongUrl = 'https://github.com/Maxel8/LSS/raw/refs/heads/main/feuerwehr-gong.mp3';
     const renamedVariables = [
         ["-", " "], ["FuStW", "Funkstreife"]
     ];    
