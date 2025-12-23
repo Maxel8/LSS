@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         Gefahrene Kilometer
 // @namespace    http://tampermonkey.net/
-// @version      1.1.2
-// @description  Zeigt eine Overlay-Tabelle mit Fahrzeug-Kilometerständen (sortierbar)
+// @version      1.2.0
+// @description  Zeigt eine Overlay-Tabelle mit Fahrzeug-Kilometerständen inkl. Summen und Ladebalken
 // @author       Max8
 // @match        https://www.leitstellenspiel.de/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=leitstellenspiel.de
 // @grant        none
 // ==/UserScript==
 
@@ -70,41 +69,54 @@
         const title = document.createElement('h2');
         title.textContent = 'Fahrzeug-Kilometerstände';
 
+        const progressWrapper = document.createElement('div');
+        progressWrapper.style.cssText = 'width:100%;max-width:500px;margin:10px 0 20px 0;border:1px solid #ccc;height:18px;border-radius:4px;overflow:hidden;';
+
+        const progressBar = document.createElement('div');
+        progressBar.style.cssText = 'height:100%;width:0%;background:#5cb85c;transition:width 0.2s;';
+        progressWrapper.appendChild(progressBar);
+
         const content = document.createElement('div');
         content.textContent = 'Lade Fahrzeugdaten…';
 
         overlay.appendChild(close);
         overlay.appendChild(title);
+        overlay.appendChild(progressWrapper);
         overlay.appendChild(content);
         document.body.appendChild(overlay);
 
-        loadAndRenderTable(content);
+        loadAndRenderTable(content, progressBar);
     }
 
     /* ================= DATA ================= */
-    async function loadAndRenderTable(container) {
+    async function loadAndRenderTable(container, progressBar) {
         try {
             const distRes = await fetch('/api/v1/vehicle_distances');
             const distJson = await distRes.json();
-
             const distances = distJson.result;
 
-            const vehicles = await Promise.all(
-                distances.map(async d => {
-                    const res = await fetch(`/api/v2/vehicles/${d.vehicle_id}`);
-                    const json = await res.json();
-                    return {
-                        name: json.result.caption,
-                        total: d.distance_km,
-                        d30: d.distance_km_30d
-                    };
-                })
-            );
+            let loaded = 0;
+            const vehicles = [];
 
-            // Initial sort by total km
+            for (const d of distances) {
+                const res = await fetch(`/api/v2/vehicles/${d.vehicle_id}`);
+                const json = await res.json();
+                vehicles.push({
+                    name: json.result.caption,
+                    total: d.distance_km,
+                    d30: d.distance_km_30d
+                });
+
+                loaded++;
+                progressBar.style.width = `${Math.round((loaded / distances.length) * 100)}%`;
+            }
+
             let sortKey = 'total';
             let sortAsc = false;
             vehicles.sort((a, b) => b.total - a.total);
+
+            const sumTotal = vehicles.reduce((s, v) => s + v.total, 0);
+            const sum30 = vehicles.reduce((s, v) => s + v.d30, 0);
 
             const table = document.createElement('table');
             table.style.cssText = 'border-collapse: collapse; width: 100%;';
@@ -139,6 +151,15 @@
                     `;
                     tbody.appendChild(tr);
                 });
+
+                const sumRow = document.createElement('tr');
+                sumRow.style.fontWeight = 'bold';
+                sumRow.innerHTML = `
+                    <td>SUMME</td>
+                    <td>${sumTotal.toFixed(1)}</td>
+                    <td>${sum30.toFixed(1)}</td>
+                `;
+                tbody.appendChild(sumRow);
             }
 
             renderTableBody();
@@ -147,7 +168,6 @@
 
             container.innerHTML = '';
             container.appendChild(table);
-
         } catch (e) {
             console.error(e);
             container.textContent = 'Fehler beim Laden der Fahrzeugdaten.';
