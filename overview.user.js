@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [LSS] Overview
 // @namespace    http://tampermonkey.net/
-// @version      v0.4.1
+// @version      v0.5
 // @description  Dashboard for LSS
 // @author       Max8
 // @match        https://www.leitstellenspiel.de/*
